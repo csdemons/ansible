@@ -1,6 +1,9 @@
 - name: Install Nginx and Copy HTML file and configure Virtual path/server
   hosts: webservers
   become: yes  # Run tasks with elevated privileges (sudo)
+  
+  vars:
+    root_dir: /var/www/ansible
 
   tasks:
     - name: Install Nginx
@@ -8,27 +11,40 @@
         name: nginx
         state: present  # Ensure Nginx is installed
    
-    - name: Configure virtual server on port 8080
-      blockinfile:
-        path: /etc/nginx/sites-enabled/default
-        block: |
-          server {
-              listen 8080;
-              server_name ansible;
-              root /var/www/ansible;
-              index index.html;
-          }
+#    - name: Configure virtual server on port 8080
+#      blockinfile:
+#        path: /etc/nginx/sites-enabled/default
+#        block: |
+#          server {
+#              listen 8080;
+#              server_name ansible;
+#              root {{root_dir}};
+#              index index.html;
+#          }
 
-    - name: Create directory /var/www/ansible
+    - name: update nginix config
+      ansible.builtin.template:
+        src: cfg/ansible.j2
+
+        dest: /etc/nginx/sites-enabled/ansible
+
+
+    - name: Create directory {{root_dir}}
       file:
-        path: /var/www/ansible
+        path: "{{root_dir}}"
         state: directory
         mode: '0755'  # Set directory permissions
 
-    - name: Copy HTML file
-      copy:
-        src: /html/index.html 
-        dest: /var/www/ansible/index.html  
+ #   - name: Copy HTML file
+ #     copy:
+ #       src: /html/index.html 
+ #       dest: {{root_dir}}/index.html  
+
+    - name: update index.html
+      ansible.builtin.copy:
+        src: html/index.html
+        dest: "{{root_dir}}/index.html"
+
 
     - name: Check Nginx service status
       systemd:
