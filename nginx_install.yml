@@ -1,6 +1,6 @@
 - name: Install Nginx and Copy HTML file and configure Virtual path/server
   hosts: webservers
-  become: yes  # Run tasks with elevated privileges (sudo)
+  become: yes  # Run  tasks with elevated privileges (sudo)
   
   vars:
     root_dir: /var/www/ansible
