@@ -1,0 +1,33 @@
+---
+- hosts: myhosts
+  connection: local
+  gather_facts: False
+
+  tasks:
+
+    # Add user
+    - name: Add user via Redfish
+      redfish_command:
+        category: Accounts
+        command: AddUser
+        force_basic_auth: yes
+        baseuri: "192.168.139.91"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        new_username: "{{ new_username }}"
+        new_password: "{{ new_password }}"
+        roleid: "{{ roleid }}"
+      ignore_errors: yes  # Игнорируем ошибку, если пользователь уже существует
+
+    # Configure NTP
+    - name: Configure NTP via Redfish
+      redfish_config:
+        category: ManagerNetworkProtocol
+        command: SetNetworkProtocol
+        baseuri: "{{ baseuri }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        ntp_servers:
+          - 127.0.0.1
+          - 192.168.1.1
+        protocol_enabled: true
