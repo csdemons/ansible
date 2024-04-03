@@ -1,17 +1,20 @@
-- name: Install Nginx and Copy HTML file and configure Virtual path/server
+- name: Установите Nginx, скопируйте HTML-файл и настройте виртуальный путь/сервер
   hosts: webservers
-  become: yes  # Run  tasks with elevated privileges (sudo)
+  become: yes  # Запуск задач с повышенными привилегиями (sudo)
   
   vars:
-    root_dir: /var/www/ansible
+    root_dir: /var/www/ansible #корневая папка проекта ansible
+    service_name: "{{ ansible_hostname }}"  # Получаем имя хоста из фактов Ansible
+    current_date: "{{ ansible_date_time.date }}"  # Получаем текущую дату из фактов Ansible
+
 
   tasks:
-    - name: Install Nginx
+    - name: Install Nginx #установка nginx
       apt:
         name: nginx
-        state: present  # Ensure Nginx is installed
+        state: present  # Убедитесь, что установлен Nginx
    
-#    - name: Configure virtual server on port 8080
+#    - name: Configure virtual server on port 8080 #Настройка виртуального сервера на порту 8080
 #      blockinfile:
 #        path: /etc/nginx/sites-enabled/default
 #        block: |
@@ -22,14 +25,14 @@
 #              index index.html;
 #          }
 
-    - name: update nginix config
+    - name: update nginix config #загрузка конфига проекта
       ansible.builtin.template:
         src: cfg/ansible.j2
 
         dest: /etc/nginx/sites-enabled/ansible
 
 
-    - name: Create directory {{root_dir}}
+    - name: Create directory {{root_dir}} #создание директории
       file:
         path: "{{root_dir}}"
         state: directory
@@ -40,9 +43,9 @@
  #       src: /html/index.html 
  #       dest: {{root_dir}}/index.html  
 
-    - name: update index.html
+    - name: update index.html #копирование index.html
       ansible.builtin.copy:
-        src: html/index.html
+        src: /templates/index.html.j2
         dest: "{{root_dir}}/index.html"
 
 
@@ -51,6 +54,8 @@
         name: nginx
         state: started
         enabled: yes    
+    
+
     
   handlers:
     - name: Restart Nginx service
