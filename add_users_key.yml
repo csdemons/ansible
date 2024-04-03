@@ -1,0 +1,32 @@
+- name: Configure users and Public key
+  hosts: webservers
+  become: yes
+
+  vars:
+    users:
+      - jaime
+      - sansa
+      - robert
+
+  tasks:
+    - name: Create users
+      user:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ users }}"
+      become: yes
+
+    - name: Create Git configuration file
+      template:
+        src: gitconfig.j2
+        dest: "/home/{{ item }}/.gitconfig"
+        owner: "{{ item }}"
+        group: "{{ item }}"
+      loop: "{{ users }}"
+    
+    - name: Upload public keys
+      authorized_key:
+        user: "{{ item }}"
+        state: present
+        key: "{{ lookup('file', 'files/public_key.pub') }}"
+      loop: "{{ users }}"
