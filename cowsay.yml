@@ -1,0 +1,29 @@
+- name: Установите cowsay, генерируем из шаблона HTML-файл
+  hosts: webservers
+  become: yes  # Запуск задач с повышенными привилегиями (sudo)
+  gather_facts: yes
+
+  vars:
+    root_dir: /var/www/ansible #корневая папка проекта ansible
+    service_name: "{{ ansible_hostname }}"  # Получаем имя хоста из фактов Ansible
+    current_date: "{{ ansible_date_time.date }}"  # Получаем текущую дату из фактов Ansible
+
+  tasks:
+    - name: Устанавливаем cowsay package
+      become: yes
+      package:
+        name: cowsay
+        state: present
+
+    - name: Запускаем команду
+      shell: cowsay "This is server {{ ansible_hostname }}!"
+      register: cowsay_result
+
+    - name: Проверяем результат
+      debug:
+        var: cowsay_result.stdout
+  
+    - name: генерируем из шаблона HTML-файл
+      ansible.builtin.copy:
+        src: templates/index.html.j2
+        dest: "{{root_dir}}/index.html"
