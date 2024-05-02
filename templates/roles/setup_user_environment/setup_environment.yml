@@ -1,0 +1,8 @@
+- name: Setup User Environment
+  hosts: webservers
+  become: yes
+  vars:
+    user_name: demons
+    user_password: VjqLjv32!@
+  roles:
+    - setup_user_environment
